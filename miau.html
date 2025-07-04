@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Enfermería - Hospital</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 50%, #c8a2c8 100%);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(186, 104, 200, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(147, 112, 219, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(221, 160, 221, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #663399 0%, #8e44ad 50%, #9b59b6 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '🌸 ✨ 🌸 ✨ 🌸 ✨ 🌸 ✨ 🌸 ✨ 🌸 ✨ 🌸 ✨ 🌸';
+            position: absolute;
+            top: 10px;
+            left: 0;
+            width: 100%;
+            font-size: 1rem;
+            opacity: 0.4;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .header::after {
+            content: '🌿 💜 🌿 💜 🌿 💜 🌿 💜 🌿 💜 🌿 💜 🌿 💜 🌿';
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            width: 100%;
+            font-size: 1rem;
+            opacity: 0.4;
+            animation: float 6s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateX(0px); }
+            50% { transform: translateX(10px); }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+        }
+
+        .workflow {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .step {
+            background: #faf8ff;
+            border-radius: 15px;
+            padding: 25px;
+            border-left: 5px solid #9b59b6;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .step.active {
+            background: linear-gradient(145deg, #f5f0ff 0%, #e8d5ff 100%);
+            border-left-color: #8e44ad;
+            box-shadow: 0 8px 25px rgba(139, 69, 173, 0.2);
+        }
+
+        .step.active::before {
+            content: '🌿';
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+
+        .step h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .step-content {
+            display: none;
+        }
+
+        .step.active .step-content {
+            display: block;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .option {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #e2e8f0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .option:hover {
+            border-color: #9b59b6;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(155, 89, 182, 0.2);
+        }
+
+        .option.selected {
+            border-color: #8e44ad;
+            background: linear-gradient(145deg, #f5f0ff 0%, #e8d5ff 100%);
+            position: relative;
+        }
+
+        .option.selected::after {
+            content: '🌸';
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.2rem;
+        }
+
+        .option h4 {
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .option p {
+            color: #718096;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            white-space: pre-line;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .note-section {
+            background: linear-gradient(145deg, #faf8ff 0%, #f5f0ff 100%);
+            border-radius: 15px;
+            padding: 25px;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+            border: 2px solid #ddd0ff;
+            box-shadow: 0 8px 25px rgba(155, 89, 182, 0.1);
+        }
+
+        .note-section h3 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+
+        .note-content {
+            background: linear-gradient(145deg, #ffffff 0%, #fdfcff 100%);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e8d5ff;
+            margin-bottom: 20px;
+            min-height: 200px;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        .note-content::before {
+            content: '💜';
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.2rem;
+            opacity: 0.6;
+        }
+
+        .copy-btn {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .copy-btn::before {
+            content: '🌸';
+            margin-right: 8px;
+        }
+
+        .copy-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(155, 89, 182, 0.4);
+            background: linear-gradient(135deg, #a569bd 0%, #9b59b6 100%);
+        }
+
+        .copy-btn:active {
+            transform: translateY(0);
+        }
+
+        .copy-btn.copied {
+            background: linear-gradient(135deg, #7d3c98 0%, #6c3483 100%);
+        }
+
+        .copy-btn.copied::before {
+            content: '✨';
+        }
+
+        .progress-bar {
+            background: #e8d5ff;
+            height: 8px;
+            border-radius: 4px;
+            margin: 20px 0;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(155, 89, 182, 0.1);
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #9b59b6 0%, #8e44ad 50%, #c8a2c8 100%);
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+            width: 0%;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #af7ac5 0%, #9b59b6 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            position: relative;
+        }
+
+        .reset-btn::before {
+            content: '🌿';
+            margin-right: 8px;
+        }
+
+        .reset-btn:hover {
+            background: linear-gradient(135deg, #bb8fce 0%, #af7ac5 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(175, 122, 197, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 Sistema de Enfermería</h1>
+            <h2 style="margin: 10px 0; font-size: 1.4rem; color: #f8d7da;">Fundación Santa Fe de Bogotá</h2>
+            <p style="font-size: 1.2rem; margin: 5px 0;">🌸 Zona Lavanda - Cuarto Piso 🌸</p>
+            <p style="font-size: 1rem; opacity: 0.9;">Gestión de Dominios, Diagnósticos e Intervenciones</p>
+        </div>
+
+        <div class="content">
+            <div class="workflow">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+
+                <div class="step active" id="step1">
+                    <h3>1. Dominios Alterados</h3>
+                    <div class="step-content">
+                        <div class="options" id="dominios">
+                            <div class="option" data-dominio="percepcion_manejo_salud">
+                                <h4>Percepción/Manejo de la Salud</h4>
+                                <p>Alteraciones en la percepción y manejo del estado de salud</p>
+                            </div>
+                            <div class="option" data-dominio="nutricional_metabolico">
+                                <h4>Nutricional-Metabólico</h4>
+                                <p>Alteraciones en el estado nutricional y procesos metabólicos</p>
+                            </div>
+                            <div class="option" data-dominio="eliminacion_intercambio">
+                                <h4>Eliminación-Intercambio</h4>
+                                <p>Problemas relacionados con la eliminación y intercambio de sustancias</p>
+                            </div>
+                            <div class="option" data-dominio="actividad_reposo">
+                                <h4>Actividad-Reposo</h4>
+                                <p>Alteraciones en los patrones de actividad y reposo</p>
+                            </div>
+                            <div class="option" data-dominio="percepcion_cognicion">
+                                <h4>Percepción/Cognición</h4>
+                                <p>Alteraciones en la percepción sensorial y procesos cognitivos</p>
+                            </div>
+                            <div class="option" data-dominio="autopercepcion">
+                                <h4>Autopercepción</h4>
+                                <p>Alteraciones en la autoestima y autopercepción</p>
+                            </div>
+                            <div class="option" data-dominio="rol_relaciones">
+                                <h4>Rol/Relaciones</h4>
+                                <p>Problemas en roles sociales y relaciones interpersonales</p>
+                            </div>
+                            <div class="option" data-dominio="afrontamiento_tolerancia_estres">
+                                <h4>Afrontamiento/Tolerancia al Estrés</h4>
+                                <p>Dificultades para manejar el estrés y situaciones adversas</p>
+                            </div>
+                            <div class="option" data-dominio="proteccion_seguridad">
+                                <h4>Protección y Seguridad</h4>
+                                <p>Riesgos para la seguridad física y protección del paciente</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step" id="step2">
+                    <h3>2. Diagnósticos de Enfermería</h3>
+                    <div class="step-content">
+                        <div class="options" id="diagnosticos"></div>
+                    </div>
+                </div>
+
+                <div class="step" id="step3">
+                    <h3>3. Intervenciones</h3>
+                    <div class="step-content">
+                        <div class="options" id="intervenciones"></div>
+                    </div>
+                </div>
+
+                <div class="step" id="step4">
+                    <h3>4. Meta</h3>
+                    <div class="step-content">
+                        <div class="options" id="metas"></div>
+                    </div>
+                </div>
+
+                <div class="step" id="step5">
+                    <h3>5. Evaluación</h3>
+                    <div class="step-content">
+                        <div class="options" id="evaluaciones"></div>
+                    </div>
+                </div>
+
+                <button class="reset-btn" onclick="resetWorkflow()">🌿 Reiniciar Proceso</button>
+            </div>
+
+            <div class="note-section">
+                <h3>🌸 Nota de Enfermería - Zona Lavanda 🌸</h3>
+                <div class="note-content" id="noteContent">
+                    Futura nota de enfermería...
+                    
+                    Seleccione los elementos del flujo de trabajo para generar la nota completa.
+                </div>
+                <button class="copy-btn" id="copyBtn" onclick="copyNote()">
+                    📋 Copiar Nota
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Datos estructurados basados exactamente en el archivo Excel
+        const data = {
+            percepcion_manejo_salud: {
+                diagnosticos: [
+                    { id: 'gestion_ineficaz', nombre: 'Gestión ineficaz de la propia salud', descripcion: 'Dificultad para manejar el proceso de la enfermedad' },
+                    { id: 'manejo_ineficaz_regimen', nombre: 'Manejo ineficaz del régimen terapéutico', descripcion: 'Dificultad para seguir el tratamiento prescrito' }
+                ],
+                intervenciones: {
+                    gestion_ineficaz: [
+                        { id: 'educacion_enfermedad', nombre: 'Educación sobre la enfermedad', descripcion: '*Evaluar el nivel de conocimientos del paciente del proceso de enfermedad\n\n*Enseñar sobre proceso de la enfermedad tanto al paciente como a su familia\n\n*Incentivar al paciente a ser partícipe activo de estrategias para su salud mental' }
+                    ],
+                    manejo_ineficaz_regimen: [
+                        { id: 'educacion_terapia', nombre: 'Educación sobre la terapia', descripcion: '*Explicar las razones de la terapia prescrita\n\n*Informar las implicaciones del tratamiento\n\n*Incluir a la familia en el plan terapéutico\n\n*Evaluar la eficacia y los efectos secundarios de la intervención farmacológica, llevando un registro de la respuesta del paciente a los fármacos administrados' }
+                    ]
+                },
+                metas: {
+                    gestion_ineficaz: [
+                        { id: 'importancia_tratamiento', nombre: 'Importancia del tratamiento', descripcion: 'El paciente logrará identificar la importancia tanto del tratamiento farmacológico como no farmacológico' }
+                    ],
+                    manejo_ineficaz_regimen: [
+                        { id: 'adherencia_terapia', nombre: 'Adherencia a la terapia', descripcion: 'El paciente logrará adherencia a la terapia prescrita durante la estancia' }
+                    ]
+                },
+                evaluaciones: {
+                    importancia_tratamiento: [
+                        { id: 'eval_tratamiento', nombre: 'Evaluación del tratamiento', descripcion: 'No aplica' }
+                    ],
+                    adherencia_terapia: [
+                        { id: 'eval_adherencia', nombre: 'Evaluación de adherencia', descripcion: 'No aplica' }
+                    ]
+                }
+            },
+            nutricional_metabolico: {
+                diagnosticos: [
+                    { id: 'riesgo_nutricion_defecto', nombre: 'Riesgo de alteración de la nutrición por defecto', descripcion: 'Riesgo de ingesta insuficiente de nutrientes' },
+                    { id: 'alteracion_nutricion_exceso', nombre: 'Alteración potencial de la nutrición por exceso', descripcion: 'Riesgo de ingesta excesiva de nutrientes' }
+                ],
+                intervenciones: {
+                    riesgo_nutricion_defecto: [
+                        { id: 'monitoreo_nutricional', nombre: 'Monitoreo nutricional', descripcion: '*Identificar gustos y rechazos de alimentos\n\n*Trabajar interprofesionalmente con el personal de nutrición las indicaciones nutricionales para la dieta\n\n*Observar/registrar cantidad de alimentos ingeridos\n\n*Pesar semanalmente\n\n*Tener en cuenta el impacto del estado psicológico del paciente que puede afectar la nutrición, trabajar en conjunto con psicología' }
+                    ],
+                    alteracion_nutricion_exceso: [
+                        { id: 'control_peso', nombre: 'Control de peso', descripcion: '*Establecer un calendario de control de peso que incluya pesajes semanales, asegurando que el paciente registre su peso y reflexione sobre cualquier cambio observado\n\n*Realizar sesiones educativas individuales para explicar la pirámide alimenticia y la proporción de alimentos recomendada\n\n*Planificar un menú semanal que cumpla con los requerimientos nutricionales y controle la ingesta calórica\n\n*Fomentar la actividad física regular a través de la creación de un plan de ejercicios personalizado\n\n*Realizar demostraciones de cómo leer etiquetas nutricionales en los alimentos\n\n*Ofrecer estrategias para el manejo de la ansiedad (evitar "antojos")\n\n*Reducir las distracciones (como la televisión o el teléfono) durante las comidas' }
+                    ]
+                },
+                metas: {
+                    riesgo_nutricion_defecto: [
+                        { id: 'peso_saludable', nombre: 'Peso saludable', descripcion: 'El paciente mantendrá un peso saludable (evaluando las variables semanalmente)' }
+                    ],
+                    alteracion_nutricion_exceso: [
+                        { id: 'disminucion_peso', nombre: 'Disminución del peso', descripcion: 'Lograr una disminución significativa del peso del paciente desde que entra hasta que egresa del servicio' }
+                    ]
+                },
+                evaluaciones: {
+                    peso_saludable: [
+                        { id: 'eval_peso', nombre: 'Evaluación del peso', descripcion: 'No aplica' }
+                    ],
+                    disminucion_peso: [
+                        { id: 'eval_disminucion', nombre: 'Evaluación de disminución', descripcion: 'No aplica' }
+                    ]
+                }
+            },
+            eliminacion_intercambio: {
+                diagnosticos: [
+                    { id: 'estreñimiento', nombre: 'Estreñimiento', descripcion: 'Disminución en la frecuencia normal de evacuación' },
+                    { id: 'diarrea', nombre: 'Diarrea', descripcion: 'Evacuaciones líquidas frecuentes' }
+                ],
+                intervenciones: {
+                    estreñimiento: [
+                        { id: 'manejo_intestinal', nombre: 'Manejo intestinal', descripcion: '*Valorar función intestinal\n\n*Control y registro de deposiciones\n\n*Evaluar la ingesta diaria de líquidos del paciente para asegurar que cumpla con los requerimientos adecuados según su edad y condición de salud\n\n*Fomentar ingesta de alimentos ricos en fibra así como de agua (recomendación: no menor a 2 L diarios)\n\n*Animar al paciente a realizar ejercicios de movilidad diaria y actividades recreativas para estimular la motilidad intestinal\n\n*Reforzar la necesidad de responder a la urgencia de la evacuación y no ignorar la necesidad de ir al baño' }
+                    ],
+                    diarrea: [
+                        { id: 'manejo_diarrea', nombre: 'Manejo de la diarrea', descripcion: '*Proporcionar información sobre el manejo dietético adecuado durante episodios de diarrea, incluyendo la recomendación de líquidos y electrolitos, así como alimentos que puedan ser más fáciles de digerir\n\n*Monitorizar la ingesta y eliminación de líquidos del paciente (Balance hidroelectrolítico)\n\n*Monitorizar y registrar signos vitales, prestando especial atención a la temperatura, para detectar posibles signos de deshidratación\n\n*Explicar la disminución de bebidas azucaradas y cafeinadas para prevenir la deshidratación' }
+                    ]
+                },
+                metas: {
+                    estreñimiento: [
+                        { id: 'deposiciones_regulares', nombre: 'Deposiciones regulares', descripcion: 'El paciente logrará tener al menos 2 deposiciones en el día' }
+                    ],
+                    diarrea: [
+                        { id: 'mejora_frecuencia', nombre: 'Mejora en la frecuencia', descripcion: 'El paciente presentará una mejora en la frecuencia de deposiciones y un restablecimiento del equilibrio hídrico en un plazo de 15 días' }
+                    ]
+                },
+                evaluaciones: {
+                    deposiciones_regulares: [
+                        { id: 'eval_deposiciones', nombre: 'Evaluación de deposiciones', descripcion: 'No aplica' }
+                    ],
+                    mejora_frecuencia: [
+                        { id: 'eval_mejora', nombre: 'Evaluación de mejora', descripcion: 'No aplica' }
+                    ]
+                }
+            },
+            actividad_reposo: {
+                diagnosticos: [
+                    { id: 'alteracion_patron_sueño', nombre: 'Alteración del patrón del sueño', descripcion: 'Dificultad para mantener un patrón de sueño adecuado' },
+                    { id: 'sedentarismo', nombre: 'Sedentarismo', descripcion: 'Falta de actividad física regular' }
+                ],
+                intervenciones: {
+                    alteracion_patron_sueño: [
+                        { id: 'higiene_sueño', nombre: 'Higiene del sueño', descripcion: '*Explicar factores que favorecen o dificultan el sueño, Favorecer rutinas antes de acostarse (leer, actividad física, etc)\n\n*Regulación de líquidos en la noche (Ir al baño antes de dormir, evitar consumo excesivo de líquidos)\n\n*Enseñar técnicas de relajación para inducir el sueño\n\n*Detectar y eliminar situaciones que provoquen ansiedad\n\n*Valorar efectos de medicación\n\n*Limitar cantidad y duración del sueño por el día (Facilitar actividades de ocio durante el día)\n\n*Promover un ambiente óptimo para conciliar el sueño\n\n*Registrar horas de sueño' }
+                    ],
+                    sedentarismo: [
+                        { id: 'plan_ejercicio', nombre: 'Plan de ejercicio', descripcion: '*Desarrollar un plan de ejercicio que sea realista y adecuado a su nivel de condición física, integrando actividades que disfrute (ej: bailar con música de su preferencia, yoga, aeróbicos, etc.)\n\n*Proveer información sobre los beneficios del ejercicio regular en la gestión del peso y la mejora del estado general de salud\n\n*Proporcionar un ambiente diferente al paciente incentivando una caminata por zonas autorizadas en el hospital\n\n*Monitorear la actividad física del paciente mediante un diario o una aplicación, ayudándolo a mantener un registro de su progreso' }
+                    ]
+                },
+                metas: {
+                    alteracion_patron_sueño: [
+                        { id: 'patron_sueño_habitual', nombre: 'Patrón de sueño habitual', descripcion: 'El paciente establecerá un patrón de sueño habitual en 1 semana' }
+                    ],
+                    sedentarismo: [
+                        { id: 'actividad_fisica', nombre: 'Actividad física', descripcion: 'El paciente logrará hacer actividad física durante 20 minutos al menos 2 veces a la semana' }
+                    ]
+                },
+                evaluaciones: {
+                    patron_sueño_habitual: [
+                        { id: 'eval_sueño', nombre: 'Evaluación del sueño', descripcion: 'No aplica' }
+                    ],
+                    actividad_fisica: [
+                        { id: 'eval_actividad', nombre: 'Evaluación de actividad', descripcion: 'No aplica' }
+                    ]
+                }
+            },
+            percepcion_cognicion: {
+                diagnosticos: [
+                    { id: 'disposicion_toma_decisiones', nombre: 'Disposición para mejorar la toma de decisiones', descripcion: 'Deseo de mejorar la capacidad de toma de decisiones' },
+                    { id: 'inestabilidad_emocional', nombre: 'Inestabilidad emocional', descripcion: 'Fluctuaciones emocionales que afectan el bienestar' }
+                ],
+                intervenciones: {
+                    disposicion_toma_decisiones: [
+                        { id: 'mejora_decisiones', nombre: 'Mejora en toma de decisiones', descripcion: '*Proporcionar ejemplos de dilemas de salud y guiar al paciente en la identificación de opciones y evaluación de pros y contras\n\n*Realizar role-playing con el paciente, simulando situaciones de toma de decisiones\n\n*Ayudar al paciente a listar y evaluar las opciones disponibles, incluyendo posibles resultados y consecuencias\n\n*Crear un espacio privado para que el paciente pueda expresar sus miedos y preocupaciones sin interrupciones' }
+                    ],
+                    inestabilidad_emocional: [
+                        { id: 'estabilidad_emocional', nombre: 'Estabilidad emocional', descripcion: '*Proporcionar un entorno seguro y de apoyo que favorezca la expresión de sentimientos y emociones\n\n*Realizar sesiones educativas donde se enseñen técnicas de identificación de emociones y sus desencadenantes\n\n*Proporcionar refuerzo positivo cuando el paciente comparta sus emociones\n\n*Introducir estrategias de afrontamiento, como la respiración profunda o la práctica de la atención plena (mindfulness)\n\n*Proporcionar estrategias prácticas para afrontar la crisis (ej: recuerdos amenos)' }
+                    ]
+                },
+                metas: {
+                    disposicion_toma_decisiones: [
+                        { id: 'decision_efectiva', nombre: 'Decisión efectiva', descripcion: 'El paciente será capaz de tomar una decisión efectiva de manera informada y autónoma (presentación de un caso hipotético)' }
+                    ],
+                    inestabilidad_emocional: [
+                        { id: 'manejo_emociones', nombre: 'Manejo de emociones', descripcion: 'El paciente logrará implementar una estrategia para el manejo de emociones de su preferencia durante la estancia hospitalaria' }
+                    ]
+                },
+                evaluaciones: {
+                    decision_efectiva: [
+                        { id: 'eval_decision', nombre: 'Evaluación de decisión', descripcion: 'No aplica' }
+                    ],
+                    manejo_emociones: [
+                        { id: 'eval_emociones', nombre: 'Evaluación de emociones', descripcion: 'No aplica' }
+                    ]
+                }
+            },
+            autopercepcion: {
+                diagnosticos: [
+                    { id: 'deficit_autocuidado_vestido', nombre: 'Déficit de autocuidado: Vestido/Acicalamiento', descripcion: 'Dificultad para vestirse y acicalarse' },
+                    { id: 'deficit_autocuidado_baño', nombre: 'Déficit de autocuidado: Baño/Higiene', descripcion: 'Dificultad para mantener la higiene personal' },
+                    { id: 'trastorno_autoconcepto', nombre: 'Trastorno de autoconcepto (autoestima, imagen corporal, rol)', descripcion: 'Alteración en la percepción de sí mismo' }
+                ],
+                intervenciones: {
+                    deficit_autocuidado_vestido: [
+                        { id: 'ayuda_vestido', nombre: 'Ayuda en el vestido', descripcion: '*Determinar el grado de autonomía de la persona\n\n*Ayudar en la selección de ropa más adecuada a la situación del día\n\n*Estimular la participación activa teniendo en cuenta las preferencias del paciente con su vestimenta' }
+                    ],
+                    deficit_autocuidado_baño: [
+                        { id: 'promocion_higiene', nombre: 'Promoción de la higiene', descripcion: '*Estimular hábitos de higiene personal elogiando los esfuerzos del paciente\n\n*Utilizar el baño y la higiene como aumento de la autoestima personal\n\n*Informar sobre la importancia de la higiene a nivel físico y psíquico para uno mismo' }
+                    ],
+                    trastorno_autoconcepto: [
+                        { id: 'mejora_autoconcepto', nombre: 'Mejora del autoconcepto', descripcion: '*Realizar sesiones de refuerzo positivo en las que se celebren los logros y habilidades del paciente\n\n*Ayudar al paciente a identificar tres fortalezas personales y discutir cómo las ha utilizado en su vida diaria\n\n*Iniciar un diario de logros donde el paciente registre sus éxitos\n\n*Realizar talleres educativos sobre estrategias para mejorar el autoconcepto\n\n*Facilitar ejercicios de autoexploración, como la identificación de pensamientos negativos' }
+                    ]
+                },
+                metas: {
+                    deficit_autocuidado_vestido: [
+                        { id: 'participacion_vestido', nombre: 'Participación en el vestido', descripcion: 'El paciente expresará interés en participar de forma activa en el vestido en 1 semana' }
+                    ],
+                    deficit_autocuidado_baño: [
+                        { id: 'mejora_higiene', nombre: 'Mejora de la higiene', descripcion: 'El paciente mejorará sus hábitos de higiene y arreglo personal' }
+                    ],
+                    trastorno_autoconcepto: [
+                        { id: 'autoconcepto_mejorado', nombre: 'Autoconcepto mejorado', descripcion: 'Al término de 5 días de intervención, el paciente será capaz de identificar y verbalizar al menos dos cualidades personales positivas' }
+                    ]
+                },
+                evaluaciones: {
+                    participacion_vestido: [
+                        { id: 'eval_vestido', nombre: 'Evaluación del vestido', descripcion: 'No aplica' }
+                    ],
+                    mejora_higiene: [
+                        { id: 'eval_higiene', nombre: 'Evaluación de higiene', descripcion: 'No aplica' }
+                    ],
+                    autoconcepto_mejorado: [
+                        { id: 'eval_autoconcepto', nombre: 'Evaluación del autoconcepto', descripcion: 'No aplica' }
+                    ]
+                }
+            },
+            rol_relaciones: {
+                diagnosticos: [
+                    { id: 'deterioro_interaccion_social', nombre: 'Deterioro de la interacción social', descripcion: 'Dificultad para interactuar socialmente' },
+                    { id: 'alteracion_procesos_familiares', nombre: 'Alteración de los procesos familiares', descripcion: 'Disfunción en los procesos familiares' }
+                ],
+                intervenciones: {
+                    deterioro_interaccion_social: [
+                        { id: 'mejora_interaccion', nombre: 'Mejora de la interacción', descripcion: '*Acompañar al paciente a zonas de la institución donde esté permitido el desplazamiento 1 vez a la semana\n\n*Participación en actividades del hospital integrativas\n\n*Aumentar y/o mantener visitas\n\n*Realizar sesiones de retroalimentación para que el paciente practique la escucha activa\n\n*Proporcionar materiales educativos sobre habilidades de comunicación efectivas\n\n*Facilitar juegos de roles en los que el paciente simule diferentes escenarios de interacción social\n\n*Crear un diario de interacciones que el paciente complete\n\n*Realizar ejercicios de autoevaluación en los que el paciente evalúe sus propias habilidades sociales' }
+                    ],
+                    alteracion_procesos_familiares: [
+                        { id: 'mejora_procesos_familiares', nombre: 'Mejora de procesos familiares', descripcion: '*Organizar reuniones familiares en un entorno cómodo y privado para fomentar la discusión abierta\n\n*Utilizar técnicas de escucha activa, como parafrasear y resumir\n\n*Facilitar el uso de herramientas visuales, como diagramas o gráficos\n\n*Promover actividades de autocuidado y bienestar emocional, como ejercicios de respiración' }
+                    ]
+                },
+                metas: {
+                    deterioro_interaccion_social: [
+                        { id: 'conversacion_fluida', nombre: 'Conversación fluida', descripcion: 'El paciente podrá mantener una conversación fluida con familiares y/o amigos' }
+                    ],
+                    alteracion_procesos_familiares: [
+                        { id: 'resolucion_conflictos', nombre: 'Resolución de conflictos', descripcion: 'El paciente y su familia serán capaces de manejar y resolver conflictos de manera efectiva al egreso' }
+                    ]
+                },
+                evaluaciones: {
+                    conversacion_fluida: [
+                        { id: 'eval_conversacion', nombre: 'Evaluación de conversación', descripcion: 'No aplica' }
+                    ],
+                    resolucion_conflictos: [
+                        { id: 'eval_conflictos', nombre: 'Evaluación de conflictos', descripcion: 'No aplica' }
+                    ]
+                }
+            },
+            afrontamiento_tolerancia_estres: {
+                diagnosticos: [
+                    { id: 'afrontamiento_individual_inefectivo', nombre: 'Afrontamiento individual inefectivo', descripcion: 'Dificultad para manejar el estrés de manera efectiva' }
+                ],
+                intervenciones: {
+                    afrontamiento_individual_inefectivo: [
+                        { id: 'tecnicas_afrontamiento', nombre: 'Técnicas de afrontamiento', descripcion: '*Enseñar técnicas de respiración profunda y relajación muscular progresiva\n\n*Fomentar el uso de diarios de emociones, donde el paciente pueda registrar y reflexionar sobre sus sentimientos\n\n*Establecer un ambiente de confianza durante las sesiones de atención\n\n*Ofrecer reafirmación positiva y palabras de aliento' }
+                    ]
+                },
+                metas: {
+                    afrontamiento_individual_inefectivo: [
+                        { id: 'identificacion_sentimientos', nombre: 'Identificación de sentimientos', descripcion: 'El paciente logrará identificar sus sentimientos y hacer una reflexión de los mismos' }
+                    ]
+                },
+                evaluaciones: {
+                    identificacion_sentimientos: [
+                        { id: 'eval_sentimientos', nombre: 'Evaluación de sentimientos', descripcion: 'No aplica' }
+                    ]
+                }
+            },
+            proteccion_seguridad: {
+                diagnosticos: [
+                    { id: 'desesperanza', nombre: 'Desesperanza', descripcion: 'Pérdida de esperanza y motivación' },
+                    { id: 'riesgo_violencia', nombre: 'Riesgo de violencia: autolesión o lesiones a otros', descripcion: 'Riesgo de comportamientos violentos' },
+                    { id: 'ansiedad', nombre: 'Ansiedad', descripcion: 'Respuesta emocional a una amenaza percibida' },
+                    { id: 'riesgo_fuga', nombre: 'Riesgo de fuga', descripcion: 'Riesgo de abandonar el tratamiento' },
+                    { id: 'sindrome_abstinencia', nombre: 'Síndrome de abstinencia', descripcion: 'Síntomas por suspensión de sustancias' }
+                ],
+                intervenciones: {
+                    desesperanza: [
+                        { id: 'manejo_desesperanza', nombre: 'Manejo de la desesperanza', descripcion: '*Favorecer la expresión de sentimientos mediante dibujos, escritos, poemas, etc\n\n*Ayudar a identificar los elementos controlables y los que no lo son\n\n*Fortalecer red de apoyo\n\n*Establecer un ambiente seguro y acogedor en la unidad\n\n*Iniciar sesiones regulares de escucha activa\n\n*Administrar los antidepresivos prescritos siguiendo la pauta indicada' }
+                    ],
+                    riesgo_violencia: [
+                        { id: 'prevencion_violencia', nombre: 'Prevención de violencia', descripcion: '*Identificar conductas que indiquen riesgo de violencia e intervenir para evitar el aumento de la agresividad\n\n*Identificar situaciones que desencadenen o agraven conductas de violencia\n\n*Realizar evaluaciones regulares sobre el riesgo de suicidio\n\n*Ofrecer técnicas de manejo de emociones y sentimientos (semáforo emocional, técnicas de respiración)' }
+                    ],
+                    ansiedad: [
+                        { id: 'manejo_ansiedad', nombre: 'Manejo de la ansiedad', descripcion: '*Identificar elementos/situaciones desencadenantes\n\n*Ayudar al paciente a reconocer la ansiedad\n\n*Implementar técnicas de respiración profunda y relajación progresiva\n\n*Facilitar un entorno de calma y tranquilidad en la habitación\n\n*Promover la participación del paciente en grupos de autoayuda' }
+                    ],
+                    riesgo_fuga: [
+                        { id: 'prevencion_fuga', nombre: 'Prevención de fuga', descripcion: '*Realizar evaluaciones regulares del estado emocional del paciente\n\n*Llevar un registro de los episodios de comportamiento que indiquen intención de fuga\n\n*Implementar un plan de intervención inmediata\n\n*Involucrar al paciente en actividades grupales terapéuticas' }
+                    ],
+                    sindrome_abstinencia: [
+                        { id: 'manejo_abstinencia', nombre: 'Manejo del síndrome de abstinencia', descripcion: '*Implementar medidas de confort no farmacológicas, como técnicas de relajación, musicoterapia\n\n*Monitorear y registrar los signos vitales del paciente de forma regular\n\n*Administrar medicamentos según lo prescrito, como benzodiazepinas\n\n*Facilitar sesiones de información sobre el proceso de recuperación\n\n*Proporcionar un entorno de apoyo emocional mediante la creación de grupos de terapia\n\n*Colaborar con un equipo interdisciplinario' }
+                    ]
+                },
+                metas: {
+                    desesperanza: [
+                        { id: 'expresion_sufrimiento', nombre: 'Expresión del sufrimiento', descripcion: 'En el plazo de 15 días el paciente compartirá su sufrimiento abierta y constructivamente con el equipo y su familia' }
+                    ],
+                    riesgo_violencia: [
+                        { id: 'no_violencia', nombre: 'No violencia', descripcion: 'El paciente no se autolesionará ni lesionará a otros durante la estancia hospitalaria' }
+                    ],
+                    ansiedad: [
+                        { id: 'control_ansiedad', nombre: 'Control de la ansiedad', descripcion: 'El paciente no mostrará signos y síntomas de ansiedad por el día de hoy' }
+                    ],
+                    riesgo_fuga: [
+                        { id: 'no_fuga', nombre: 'No fuga', descripcion: 'El paciente no llevará a cabo una fuga durante su estancia' }
+                    ],
+                    sindrome_abstinencia: [
+                        { id: 'disminucion_sintomas', nombre: 'Disminución de síntomas', descripcion: 'El paciente logrará disminuir los síntomas del síndrome de abstinencia desde que ingresa hasta el egreso' }
+                    ]
+                },
+                evaluaciones: {
+                    expresion_sufrimiento: [
+                        { id: 'eval_sufrimiento', nombre: 'Evaluación del sufrimiento', descripcion: 'No aplica' }
+                    ],
+                    no_violencia: [
+                        { id: 'eval_violencia', nombre: 'Evaluación de violencia', descripcion: 'No aplica' }
+                    ],
+                    control_ansiedad: [
+                        { id: 'eval_ansiedad', nombre: 'Evaluación de ansiedad', descripcion: 'No aplica' }
+                    ],
+                    no_fuga: [
+                        { id: 'eval_fuga', nombre: 'Evaluación de fuga', descripcion: 'No aplica' }
+                    ],
+                    disminucion_sintomas: [
+                        { id: 'eval_abstinencia', nombre: 'Evaluación de abstinencia', descripcion: 'No aplica' }
+                    ]
+                }
+            }
+        };
+
+        let currentStep = 1;
+        let selectedData = {};
+
+        function updateProgress() {
+            const progress = ((currentStep - 1) / 5) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        function activateStep(stepNumber) {
+            // Desactivar todos los pasos
+            document.querySelectorAll('.step').forEach(step => {
+                step.classList.remove('active');
+            });
+            
+            // Activar el paso actual
+            document.getElementById(`step${stepNumber}`).classList.add('active');
+            currentStep = stepNumber;
+            updateProgress();
+        }
+
+        function updateNote() {
+            const noteContent = document.getElementById('noteContent');
+            
+            if (Object.keys(selectedData).length === 0) {
+                noteContent.innerHTML = 'Futura nota de enfermería...<br><br>Seleccione los elementos del flujo de trabajo para generar la nota completa.';
+                return;
+            }
+
+            // Formato específico solicitado con fecha y hora integradas
+            const now = new Date();
+            const fecha = now.toLocaleDateString();
+            const hora = now.toLocaleTimeString('es-ES', { hour12: false });
+            
+            let note = `<strong>Fecha:</strong> ${fecha} <strong>Hora:</strong> ${hora}<br><br>`;
+            note += 'Recibo paciente Femenino/ Masculino, de ___ años de edad, quien se encuentra en el servicio de hospitalización del cuarto piso en la zona lavanda, al momento de la valoración mental, se encuentra alterado el dominio de ';
+            
+            if (selectedData.dominio) {
+                note += `<strong>${selectedData.dominio}</strong> `;
+            } else {
+                note += '<strong>___________</strong> ';
+            }
+            
+            note += 'en el cual se prioriza el diagnóstico ';
+            
+            if (selectedData.diagnostico) {
+                note += `<strong>${selectedData.diagnostico}</strong>, `;
+            } else {
+                note += '<strong>______________</strong>, ';
+            }
+            
+            note += 'en él se establece la meta ';
+            
+            if (selectedData.metaDescripcion) {
+                note += `<strong>${selectedData.metaDescripcion}</strong> `;
+            } else {
+                note += '<strong>___________</strong> ';
+            }
+            
+            note += 'y por la cual se realizan las siguientes intervenciones: ';
+            
+            if (selectedData.intervencionDescripcion) {
+                note += `<strong>${selectedData.intervencionDescripcion}</strong>, `;
+            } else {
+                note += '<strong>_____________</strong>, ';
+            }
+            
+            note += 'dadas estas y al finalizado el turno se evaluó la meta del cuidado la cual se logró/ no se logró.';
+            
+            noteContent.innerHTML = note;
+        }
+
+        // Event listeners para dominios
+        document.getElementById('dominios').addEventListener('click', function(e) {
+            if (e.target.closest('.option')) {
+                const option = e.target.closest('.option');
+                const dominio = option.dataset.dominio;
+                
+                // Remover selección anterior
+                document.querySelectorAll('#dominios .option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                
+                // Seleccionar nueva opción
+                option.classList.add('selected');
+                selectedData.dominio = option.querySelector('h4').textContent;
+                selectedData.dominioId = dominio;
+                
+                // Limpiar selecciones siguientes
+                selectedData.diagnostico = null;
+                selectedData.intervencion = null;
+                selectedData.intervencionDescripcion = null;
+                selectedData.meta = null;
+                selectedData.metaDescripcion = null;
+                selectedData.evaluacion = null;
+                
+                // Cargar diagnósticos
+                loadDiagnosticos(dominio);
+                activateStep(2);
+                updateNote();
+            }
+        });
+
+        function loadDiagnosticos(dominio) {
+            const diagnosticosContainer = document.getElementById('diagnosticos');
+            diagnosticosContainer.innerHTML = '';
+            
+            if (data[dominio] && data[dominio].diagnosticos) {
+                data[dominio].diagnosticos.forEach(diagnostico => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'option';
+                    optionDiv.dataset.diagnostico = diagnostico.id;
+                    optionDiv.innerHTML = `
+                        <h4>${diagnostico.nombre}</h4>
+                        <p>${diagnostico.descripcion}</p>
+                    `;
+                    diagnosticosContainer.appendChild(optionDiv);
+                });
+                
+                // Event listener para diagnósticos
+                diagnosticosContainer.addEventListener('click', function(e) {
+                    if (e.target.closest('.option')) {
+                        const option = e.target.closest('.option');
+                        const diagnosticoId = option.dataset.diagnostico;
+                        
+                        // Remover selección anterior
+                        document.querySelectorAll('#diagnosticos .option').forEach(opt => {
+                            opt.classList.remove('selected');
+                        });
+                        
+                        // Seleccionar nueva opción
+                        option.classList.add('selected');
+                        selectedData.diagnostico = option.querySelector('h4').textContent;
+                        selectedData.diagnosticoId = diagnosticoId;
+                        
+                        // Limpiar selecciones siguientes
+                        selectedData.intervencion = null;
+                        selectedData.intervencionDescripcion = null;
+                        selectedData.meta = null;
+                        selectedData.metaDescripcion = null;
+                        selectedData.evaluacion = null;
+                        
+                        // Cargar intervenciones
+                        loadIntervenciones(selectedData.dominioId, diagnosticoId);
+                        activateStep(3);
+                        updateNote();
+                    }
+                });
+            }
+        }
+
+        function loadIntervenciones(dominio, diagnostico) {
+            const intervencionesContainer = document.getElementById('intervenciones');
+            intervencionesContainer.innerHTML = '';
+            
+            if (data[dominio] && data[dominio].intervenciones && data[dominio].intervenciones[diagnostico]) {
+                data[dominio].intervenciones[diagnostico].forEach(intervencion => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'option';
+                    optionDiv.dataset.intervencion = intervencion.id;
+                    optionDiv.innerHTML = `
+                        <h4>${intervencion.nombre}</h4>
+                        <p>${intervencion.descripcion}</p>
+                    `;
+                    intervencionesContainer.appendChild(optionDiv);
+                });
+                
+                // Event listener para intervenciones
+                intervencionesContainer.addEventListener('click', function(e) {
+                    if (e.target.closest('.option')) {
+                        const option = e.target.closest('.option');
+                        const intervencionId = option.dataset.intervencion;
+                        
+                        // Remover selección anterior
+                        document.querySelectorAll('#intervenciones .option').forEach(opt => {
+                            opt.classList.remove('selected');
+                        });
+                        
+                        // Seleccionar nueva opción
+                        option.classList.add('selected');
+                        selectedData.intervencion = option.querySelector('h4').textContent;
+                        selectedData.intervencionDescripcion = option.querySelector('p').textContent;
+                        selectedData.intervencionId = intervencionId;
+                        
+                        // Limpiar selecciones siguientes
+                        selectedData.meta = null;
+                        selectedData.metaDescripcion = null;
+                        selectedData.evaluacion = null;
+                        
+                        // Cargar metas
+                        loadMetas(selectedData.dominioId, selectedData.diagnosticoId);
+                        activateStep(4);
+                        updateNote();
+                    }
+                });
+            }
+        }
+
+        function loadMetas(dominio, diagnostico) {
+            const metasContainer = document.getElementById('metas');
+            metasContainer.innerHTML = '';
+            
+            if (data[dominio] && data[dominio].metas && data[dominio].metas[diagnostico]) {
+                data[dominio].metas[diagnostico].forEach(meta => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'option';
+                    optionDiv.dataset.meta = meta.id;
+                    optionDiv.innerHTML = `
+                        <h4>${meta.nombre}</h4>
+                        <p>${meta.descripcion}</p>
+                    `;
+                    metasContainer.appendChild(optionDiv);
+                });
+                
+                // Event listener para metas
+                metasContainer.addEventListener('click', function(e) {
+                    if (e.target.closest('.option')) {
+                        const option = e.target.closest('.option');
+                        const metaId = option.dataset.meta;
+                        
+                        // Remover selección anterior
+                        document.querySelectorAll('#metas .option').forEach(opt => {
+                            opt.classList.remove('selected');
+                        });
+                        
+                        // Seleccionar nueva opción
+                        option.classList.add('selected');
+                        selectedData.meta = option.querySelector('h4').textContent;
+                        selectedData.metaDescripcion = option.querySelector('p').textContent;
+                        selectedData.metaId = metaId;
+                        
+                        // Limpiar selecciones siguientes
+                        selectedData.evaluacion = null;
+                        
+                        // Cargar evaluaciones
+                        loadEvaluaciones(selectedData.dominioId, metaId);
+                        activateStep(5);
+                        updateNote();
+                    }
+                });
+            }
+        }
+
+        function loadEvaluaciones(dominio, meta) {
+            const evaluacionesContainer = document.getElementById('evaluaciones');
+            evaluacionesContainer.innerHTML = '';
+            
+            if (data[dominio] && data[dominio].evaluaciones && data[dominio].evaluaciones[meta]) {
+                data[dominio].evaluaciones[meta].forEach(evaluacion => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'option';
+                    optionDiv.dataset.evaluacion = evaluacion.id;
+                    optionDiv.innerHTML = `
+                        <h4>${evaluacion.nombre}</h4>
+                        <p>${evaluacion.descripcion}</p>
+                    `;
+                    evaluacionesContainer.appendChild(optionDiv);
+                });
+                
+                // Event listener para evaluaciones
+                evaluacionesContainer.addEventListener('click', function(e) {
+                    if (e.target.closest('.option')) {
+                        const option = e.target.closest('.option');
+                        
+                        // Remover selección anterior
+                        document.querySelectorAll('#evaluaciones .option').forEach(opt => {
+                            opt.classList.remove('selected');
+                        });
+                        
+                        // Seleccionar nueva opción
+                        option.classList.add('selected');
+                        selectedData.evaluacion = option.querySelector('h4').textContent;
+                        
+                        updateNote();
+                    }
+                });
+            }
+        }
+
+        function copyNote() {
+            const noteContent = document.getElementById('noteContent');
+            const copyBtn = document.getElementById('copyBtn');
+            
+            // Crear un elemento temporal para copiar el texto
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = noteContent.innerText;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+            
+            // Cambiar el botón para indicar que se copió
+            copyBtn.textContent = '✅ ¡Copiado!';
+            copyBtn.classList.add('copied');
+            
+            setTimeout(() => {
+                copyBtn.textContent = '📋 Copiar Nota';
+                copyBtn.classList.remove('copied');
+            }, 2000);
+        }
+
+        function resetWorkflow() {
+            currentStep = 1;
+            selectedData = {};
+            
+            // Limpiar todas las selecciones
+            document.querySelectorAll('.option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Limpiar contenedores
+            document.getElementById('diagnosticos').innerHTML = '';
+            document.getElementById('intervenciones').innerHTML = '';
+            document.getElementById('metas').innerHTML = '';
+            document.getElementById('evaluaciones').innerHTML = '';
+            
+            // Activar primer paso
+            activateStep(1);
+            updateNote();
+        }
+
+        // Inicializar
+        updateProgress();
+        updateNote();
+    </script>
+</body>
+</html>
